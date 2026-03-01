@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anaxes Naval System - Informationskonsole</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --republic-blue: #00a8ff;
+            --republic-cyan: #00d4ff;
+            --republic-dark: #001a2e;
+            --republic-darker: #000d17;
+            --republic-accent: #ff6b35;
+            --republic-warning: #ffcc00;
+            --republic-success: #00ff88;
+            --republic-locked: #445566;
+            --holo-glow: 0 0 20px rgba(0, 168, 255, 0.5), 0 0 40px rgba(0, 168, 255, 0.3);
+            --scanline-opacity: 0.03;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--republic-darker);
+            color: var(--republic-cyan);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Scanline Overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 168, 255, var(--scanline-opacity)) 2px,
+                rgba(0, 168, 255, var(--scanline-opacity)) 4px
+            );
+            pointer-events: none;
+            z-index: 1000;
+            animation: scanlineMove 8s linear infinite;
+        }
+
+        @keyframes scanlineMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        /* Holographic Noise */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.02;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Main Container */
+        .console-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Section */
+        .console-header {
+            background: linear-gradient(135deg, var(--republic-dark) 0%, rgba(0, 26, 46, 0.9) 100%);
+            border: 2px solid var(--republic-blue);
+            padding: 25px 40px;
+            margin-bottom: 30px;
+            position: relative;
+            clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 30px 100%, 0 calc(100% - 30px));
+        }
+
+        .console-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--republic-cyan), transparent);
+            animation: headerPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes headerPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .republic-emblem {
+            width: 70px;
+            height: 70px;
+            position: relative;
+        }
+
+        .republic-emblem svg {
+            width: 100%;
+            height: 100%;
+            fill: var(--republic-cyan);
+            filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.5));
+            animation: emblemRotate 20s linear infinite;
+        }
+
+        @keyframes emblemRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-text h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--republic-cyan);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: var(--holo-glow);
+            margin-bottom: 5px;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.85rem;
+            color: var(--republic-blue);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .status-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--republic-success);
+            border-radius: 50%;
+            animation: statusBlink 2s ease-in-out infinite;
+            box-shadow: 0 0 10px var(--republic-success);
+        }
+
+        @keyframes statusBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .datetime {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            color: var(--republic-blue);
+            letter-spacing: 1px;
+        }
+
+        /* Navigation Grid */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-grow: 1;
+        }
+
+        .nav-card {
+            background: linear-gradient(180deg, rgba(0, 26, 46, 0.95) 0%, rgba(0, 13, 23, 0.98) 100%);
+            border: 1px solid var(--republic-blue);
+            padding: 30px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 168, 255, 0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-card:hover::before {
+            opacity: 1;
+        }
+
+        .nav-card:hover {
+            border-color: var(--republic-cyan);
+            box-shadow: var(--holo-glow);
+            transform: translateY(-3px);
+        }
+
+        .nav-card:active {
+            transform: translateY(0);
+        }
+
+        .nav-card-icon {
+            width: 45px;
+            height: 45px;
+            margin-bottom: 18px;
+            fill: var(--republic-cyan);
+            filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.4));
+        }
+
+        .nav-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-card p {
+            font-size: 0.85rem;
+            color: var(--republic-blue);
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .nav-card .card-code {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.6rem;
+            color: var(--republic-blue);
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        /* Featured Card */
+        .nav-card.featured {
+            grid-column: span 2;
+            border-color: var(--republic-cyan);
+            border-width: 2px;
+        }
+
+        .nav-card.featured .nav-card-icon {
+            width: 55px;
+            height: 55px;
+        }
+
+        .nav-card.featured h3 {
+            font-size: 1.15rem;
+        }
+
+        /* Locked Cards */
+        .nav-card.locked {
+            border-color: var(--republic-locked);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .nav-card.locked:hover {
+            border-color: var(--republic-locked);
+            box-shadow: none;
+            transform: none;
+        }
+
+        .nav-card.locked:hover::before {
+            opacity: 0;
+        }
+
+        .nav-card.locked .nav-card-icon {
+            fill: var(--republic-locked);
+            filter: none;
+        }
+
+        .nav-card.locked h3,
+        .nav-card.locked p {
+            color: var(--republic-locked);
+        }
+
+        .nav-card.locked::after {
+            content: 'GESPERRT';
+            position: absolute;
+            bottom: 12px;
+            right: 18px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.55rem;
+            color: var(--republic-locked);
+            letter-spacing: 2px;
+            padding: 3px 8px;
+            border: 1px solid var(--republic-locked);
+        }
+
+        /* Footer Section */
+        .console-footer {
+            background: linear-gradient(135deg, var(--republic-dark) 0%, rgba(0, 26, 46, 0.9) 100%);
+            border: 1px solid var(--republic-blue);
+            border-top: 2px solid var(--republic-cyan);
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-info {
+            display: flex;
+            gap: 35px;
+        }
+
+        .footer-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .footer-item .label {
+            font-size: 0.65rem;
+            color: var(--republic-blue);
+            opacity: 0.6;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .footer-item .value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            color: var(--republic-cyan);
+            letter-spacing: 1px;
+        }
+
+        .security-clearance {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            border: 1px solid var(--republic-success);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .clearance-icon {
+            width: 20px;
+            height: 20px;
+            fill: var(--republic-success);
+        }
+
+        .clearance-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            color: var(--republic-success);
+            letter-spacing: 2px;
+        }
+
+        /* Corner Brackets */
+        .corner-bracket {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--republic-blue);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .corner-bracket.top-left {
+            top: 10px;
+            left: 10px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .corner-bracket.top-right {
+            top: 10px;
+            right: 10px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .corner-bracket.bottom-left {
+            bottom: 10px;
+            left: 10px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .corner-bracket.bottom-right {
+            bottom: 10px;
+            right: 10px;
+            border-left: none;
+            border-top: none;
+        }
+
+        /* Boot Sequence */
+        .boot-sequence {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--republic-darker);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: bootFadeOut 0.5s ease forwards 2.5s;
+        }
+
+        @keyframes bootFadeOut {
+            to { opacity: 0; pointer-events: none; }
+        }
+
+        .boot-logo {
+            width: 100px;
+            height: 100px;
+            fill: var(--republic-cyan);
+            animation: bootPulse 0.5s ease-in-out infinite alternate;
+            margin-bottom: 25px;
+        }
+
+        @keyframes bootPulse {
+            from { opacity: 0.5; filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.3)); }
+            to { opacity: 1; filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.8)); }
+        }
+
+        .boot-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            color: var(--republic-cyan);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            animation: bootTextFade 0.8s ease-in-out infinite alternate;
+        }
+
+        @keyframes bootTextFade {
+            from { opacity: 0.3; }
+            to { opacity: 1; }
+        }
+
+        .boot-bar {
+            width: 250px;
+            height: 3px;
+            background: rgba(0, 168, 255, 0.2);
+            margin-top: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .boot-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            background: var(--republic-cyan);
+            animation: bootProgress 2s ease forwards;
+        }
+
+        @keyframes bootProgress {
+            to { width: 100%; }
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-card.featured {
+                grid-column: span 1;
+            }
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            .status-section {
+                align-items: center;
+            }
+            .footer-info {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .console-footer {
+                flex-direction: column;
+                gap: 18px;
+            }
+            .logo-text h1 {
+                font-size: 1.2rem;
+                letter-spacing: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Boot Sequence -->
+    <div class="boot-sequence">
+        <svg class="boot-logo" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="2"/>
+            <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="50" cy="50" r="8" fill="currentColor"/>
+            <path d="M50 15 L50 5" stroke="currentColor" stroke-width="2"/>
+            <path d="M50 95 L50 85" stroke="currentColor" stroke-width="2"/>
+            <path d="M15 50 L5 50" stroke="currentColor" stroke-width="2"/>
+            <path d="M95 50 L85 50" stroke="currentColor" stroke-width="2"/>
+            <path d="M50 20 L55 30 L50 28 L45 30 Z" fill="currentColor"/>
+        </svg>
+        <div class="boot-text">System Initialisierung</div>
+        <div class="boot-bar"></div>
+    </div>
+
+    <!-- Corner Brackets -->
+    <div class="corner-bracket top-left"></div>
+    <div class="corner-bracket top-right"></div>
+    <div class="corner-bracket bottom-left"></div>
+    <div class="corner-bracket bottom-right"></div>
+
+    <div class="console-container">
+        
+        <!-- Header -->
+        <header class="console-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="republic-emblem">
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="1"/>
+                            <circle cx="50" cy="50" r="6" fill="currentColor"/>
+                            <g stroke="currentColor" stroke-width="2">
+                                <line x1="50" y1="12" x2="50" y2="25"/>
+                                <line x1="50" y1="75" x2="50" y2="88"/>
+                                <line x1="12" y1="50" x2="25" y2="50"/>
+                                <line x1="75" y1="50" x2="88" y2="50"/>
+                                <line x1="23" y1="23" x2="32" y2="32"/>
+                                <line x1="68" y1="68" x2="77" y2="77"/>
+                                <line x1="77" y1="23" x2="68" y2="32"/>
+                                <line x1="32" y1="68" x2="23" y2="77"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>Anaxes Naval System</h1>
+                        <span class="subtitle">Informationskonsole</span>
+                    </div>
+                </div>
+                <div class="status-section">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span>SYSTEM ONLINE</span>
+                    </div>
+                    <div class="datetime" id="datetime">-- Lade Zeitstempel --</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Grid -->
+        <nav class="nav-grid">
+            
+            <!-- AKTIVER LINK: Datenbank -->
+            <a href="https://ans-datenbank-system.vvd.world" target="_blank" class="nav-card featured">
+                <span class="card-code">DAT-001</span>
+                <svg class="nav-card-icon" viewBox="0 0 50 50">
+                    <ellipse cx="25" cy="12" rx="18" ry="6" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M7 12 L7 38 Q7 44 25 44 Q43 44 43 38 L43 12" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <ellipse cx="25" cy="25" rx="18" ry="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <ellipse cx="25" cy="38" rx="18" ry="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <h3>Archiv-Datenbank</h3>
+                <p>Republikanische Aufzeichnungen, technische Handbücher, Protokolle und Wissensdatenbank.</p>
+            </a>
+
+            <!-- GESPERRTE PLATZHALTER -->
+            <div class="nav-card locked">
+                <span class="card-code">KOM-002</span>
+                <svg class="nav-card-icon" viewBox="0 0 50 50">
+                    <ellipse cx="25" cy="25" rx="20" ry="12" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <ellipse cx="25" cy="25" rx="12" ry="7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <circle cx="25" cy="25" r="3" fill="currentColor"/>
+                </svg>
+                <h3>Kommunikation</h3>
+                <p>HoloNet-Verbindungen und Flottenfrequenzen.</p>
+            </div>
+
+            <div class="nav-card locked">
+                <span class="card-code">TAK-003</span>
+                <svg class="nav-card-icon" viewBox="0 0 50 50">
+                    <circle cx="25" cy="25" r="18" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="25" cy="25" r="10" fill="none" stroke="currentColor" stroke-width="1"/>
+                    <circle cx="25" cy="25" r="3" fill="currentColor"/>
+                </svg>
+                <h3>Taktische Anzeige</h3>
+                <p>Echtzeit-Sensorik und Lageübersicht.</p>
+            </div>
+
+            <div class="nav-card locked">
+                <span class="card-code">NAV-004</span>
+                <svg class="nav-card-icon" viewBox="0 0 50 50">
+                    <polygon points="25,5 45,45 25,35 5,45" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="25" cy="28" r="4" fill="currentColor"/>
+                </svg>
+                <h3>Navigation</h3>
+                <p>Hyperraum-Koordinaten und Routenplanung.</p>
+            </div>
+
+        </nav>
+
+        <!-- Footer -->
+        <footer class="console-footer">
+            <div class="footer-info">
+                <div class="footer-item">
+                    <span class="label">Terminal-ID</span>
+                    <span class="value">ANX-NET-001</span>
+                </div>
+                <div class="footer-item">
+                    <span class="label">Netzwerk</span>
+                    <span class="value">Anaxes Naval System</span>
+                </div>
+            </div>
+            <div class="security-clearance">
+                <svg class="clearance-icon" viewBox="0 0 24 24">
+                    <path d="M12 2 L4 6 L4 12 C4 17 8 21 12 22 C16 21 20 17 20 12 L20 6 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <polyline points="8,12 11,15 16,9" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+                <span class="clearance-text">Zugriff Autorisiert</span>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const galacticYear = now.getFullYear() + 13000;
+            const time = now.toLocaleTimeString('de-DE', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false 
+            });
+            const day = now.getDate().toString().padStart(2, '0');
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            
+            document.getElementById('datetime').textContent = 
+                `${day}.${month}.${galacticYear} // ${time} GST`;
+        }
+        
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+    </script>
+
+</body>
+</html>
